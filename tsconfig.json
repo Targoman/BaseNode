@@ -18,14 +18,14 @@
     "rootDirs": [
       "src",
       "../Common/src",
-      "../Base/src"
+      "../BaseNode/src"
     ],
     "paths": {
       "#Base/*": [
-        "../Base/src/*",
-        "../../Base/src/*",
-        "../../../Base/src/*",
-        "../../../../Base/src/*"
+        "../BaseNode/src/*",
+        "../../BaseNode/src/*",
+        "../../../BaseNode/src/*",
+        "../../../../BaseNode/src/*"
       ],
       "#Common/*": [
         "../Common/src/*",
@@ -50,7 +50,7 @@
   },
   "include": [
     "src/**/*.ts",
-    "../Base/src/REST/apiValidators.ts",
+    "../BaseNode/src/REST/apiValidators.ts",
     "src/modules/authorization.ts",
     "../Common/src/functions.ts",
     "../Common/src/tables/tblAlarmMembers.ts",

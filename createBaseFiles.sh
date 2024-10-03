@@ -1,13 +1,13 @@
 #!/bin/sh
 
-ln -sv ../Base/.hintrc .
-ln -sv ../Base/.eslintrc.js .
-ln -sv ../Base/obfuscator.config.json .
-ln -sv ../Base/tsconfig.json .
-ln -sv ../Base/rollup.config.mjs .
-cp -R -u -p ../Base/package.json .
-cp -R -u -p ../Base/docker ..
-cp -R -u -p ../Base/.gitignore ..
+ln -sv ../BaseNode/.hintrc .
+ln -sv ../BaseNode/.eslintrc.js .
+ln -sv ../BaseNode/obfuscator.config.json .
+ln -sv ../BaseNode/tsconfig.json .
+ln -sv ../BaseNode/rollup.config.mjs .
+cp -R -u -p ../BaseNode/package.json .
+cp -R -u -p ../BaseNode/docker ..
+cp -R -u -p ../BaseNode/.gitignore ..
 
 if [ ! -f "../buildDockerImages.sh" ]; then
   cd ../
