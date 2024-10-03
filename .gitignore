@@ -1,0 +1,15 @@
+node_modules/
+build/
+.build/
+dist/
+.dist/
+.vscode/
+.*~
+.conf.json*
+.config*.json*
+config*.json*
+.fingerprint*
+.env
+yarn-error.log
+yarn.lock
+.data

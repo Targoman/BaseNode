@@ -1,0 +1,64 @@
+{
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "removeComments": false,
+    "declaration": true,
+    "noEmitOnError": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "outDir": ".build",
+    "sourceMap": false,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "strict": true,
+    "noImplicitAny": false,
+    "strictPropertyInitialization": false,
+    "module": "CommonJS",
+    "target": "ES2022",
+    "rootDirs": [
+      "src",
+      "../Common/src",
+      "../Base/src"
+    ],
+    "paths": {
+      "#Base/*": [
+        "../Base/src/*",
+        "../../Base/src/*",
+        "../../../Base/src/*",
+        "../../../../Base/src/*"
+      ],
+      "#Common/*": [
+        "../Common/src/*",
+        "../../Common/src/*",
+        "../../../Common/src/*",
+        "../../../../Common/src/*"
+      ]
+    },
+    "types": [
+      "long",
+      "node"
+    ],
+    "lib": [
+      "es2021",
+      "dom"
+    ]
+  },
+  "ts-node": {
+    "require": [
+      "tsconfig-paths/register"
+    ]
+  },
+  "include": [
+    "src/**/*.ts",
+    "../Base/src/REST/apiValidators.ts",
+    "src/modules/authorization.ts",
+    "../Common/src/functions.ts",
+    "../Common/src/tables/tblAlarmMembers.ts",
+    "../Common/src/tables/tblAlarmPhrases.ts",
+    "../Common/src/tables/tblAlarmsEmitted.ts",
+    "../Common/src/tables/database.ts",
+    // "src/scrappers/rubika/clsRequestTemp.ts",
+    // "src/scrappers/rubika/socketService.ts",
+    // "src/logger.ts"
+  ]
+}

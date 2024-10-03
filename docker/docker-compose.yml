@@ -1,0 +1,56 @@
+version: '3.7'
+
+services:
+  mysql:
+    hostname: mysql
+    image: docker-hub.targoman.com/external/db/mysql:8.2.0-alpine
+    restart: always
+    ports:
+      - 3306:3306
+    environment:
+          - MYSQL_ROOT_PASSWORD=*****
+    volumes:
+          - /etc/localtime:/etc/localtime:ro
+          - ./data:/var/lib/mysql
+          - ./prod.cnf:/etc/mysql/conf.d/prod.cnf
+          - ./prod.cnf:/etc/mysql/mysql.conf.d/prod.cnf
+
+  api:
+    hostname: api
+    image: docker-hub.targoman.com/projects/persian-im/api
+    restart: always
+    ports:
+      - 8080:8080
+    volumes:
+      - type: bind
+        source: ./config.json
+        target: /usr/src/app/.config.json
+
+  mongo:
+    hostname: mongo
+    image:  docker-hub.targoman.com/external/db/mongo:7.0.14-nanoserver
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: '*****'
+
+  mongo-express:
+    hostname: mongoexpress
+    image: docker-hub.targoman.com/external/db/mongo-express:1.0.20-alpine
+    restart: always
+    ports:
+      - 8081:8081
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: '*****'
+      ME_CONFIG_MONGODB_SERVER: 'mongo'
+      ME_CONFIG_MONGODB_PORT: 27017
+      ME_CONFIG_SITE_BASEURL: '/'
+      ME_CONFIG_SITE_SSL_ENABLED: 'false'
+      ME_CONFIG_BASICAUTH_USERNAME: root
+      ME_CONFIG_BASICAUTH_PASSWORD: '*****'
+
+networks:
+  default:
+#    external:
+      name: data
