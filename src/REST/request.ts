@@ -1,6 +1,6 @@
 import { Request } from "express"
-import { IntfQueryParams } from "#Base/interfaces"
-import { parseBool, simplifyByJSON } from "#Base/functions"
+import { IntfQueryParams } from "/@BaseNode/interfaces"
+import { parseBool, simplifyByJSON } from "/@BaseNode/functions"
 
 export function request2SQL(req: Request) {
     const params: IntfQueryParams = {}

@@ -42,7 +42,7 @@ export function getDBconfigs(baseConfigs?: IntfDBConfigs | { [key: string]: Intf
     return conf
 }
 
-export function parseEnum(keys: any, str: string) {
+export function parseEnum(keys, str: string) {
     const enumKeys = Object.keys(keys);
     for (let i = 0; i < enumKeys.length; i++)
         if (enumKeys[i] === str || keys[enumKeys[i]] === str)
@@ -71,7 +71,7 @@ export function findFile(dir: string, fileName: string) {
     }
 }
 
-export function enumStr(enu: any, val: any) {
+export function enumStr(enu, val) {
     for (var k in enu) if (enu[k] == val) return k;
     return undefined
 }
@@ -83,12 +83,12 @@ export function removeExtraSpaces(text?: string, maxlen?: number) {
     return maxlen ? text.substring(0, maxlen) : text
 }
 
-export function simplifyByJSON(val: any, forceArray = false) {
+export function simplifyByJSON(val, forceArray = false) {
     const converted = val && JSON.parse(JSON.stringify(val))
     return converted && (forceArray ? Array.isArray(converted) ? converted : [converted] : converted)
 }
 
-export function parseBool(val?: any) {
+export function parseBool(val?) {
     if (!val) return false
     if (typeof val === "boolean") return val
     if (typeof val === "number") return val !== 0
@@ -101,7 +101,7 @@ export function removeUndefined(obj: object) {
     return obj
 }
 
-export function isNumber(value: any) {
+export function isNumber(value) {
     return typeof value === 'number' && isFinite(value);
 }
 
@@ -114,4 +114,8 @@ export function ms2HRF(ms: number) {
     if (ms > MINUTE) return `${ms / MINUTE} Minutes`
     if (ms > SECOND) return `${ms / SECOND} Seconds`
     return `${ms} miliseconds`
+}
+
+export function exMsg(ex: unknown): string {
+    return ex instanceof Error ? ex.message : (typeof ex === "string" ? ex : "")
 }

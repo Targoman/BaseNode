@@ -5,7 +5,7 @@ export interface IntfGenericConfigs {
     showWarnings: boolean,
     debugDB: boolean
     debugAPI: boolean
-    debugAPIResult:boolean
+    debugAPIResult: boolean
     logPath: string
 }
 
@@ -23,16 +23,16 @@ export interface IntfProxyConfigs {
     ports: number[]
 }
 
-export interface IntfKeyVal { [key: string]: any }
+export interface IntfKeyVal { [key: string]:unknown }
 
 export interface IntfQueryParams {
     cols?: string[]
     conditions?: string[]
-    condVals?: any[]
+    condVals?:Array<unknown>
     extraJoins?: string[]
     orderBy?: string[]
     limit?: number
     offset?: number
-    reportTotal? : boolean
+    reportTotal?: boolean
 }
 

@@ -1,4 +1,4 @@
-import { MongoClient, ObjectId, ServerApiVersion } from "mongodb";
+import { MongoClient, MongoWriteConcernError, ObjectId, ServerApiVersion, WriteError } from "mongodb";
 import { IntfDBConfigs, IntfKeyVal } from "./interfaces";
 import { clsLogger } from "./logger";
 import { exConnection } from "./exceptions";
@@ -57,18 +57,18 @@ export default class clsMongo {
                 this.logger.db({ insert2Mongo: { doc, result } });
                 return { inserted: 1, ids: [result.insertedId] }
             }
-        } catch (ex: any) {
-            if (ex?.errorResponse && ex?.errorResponse.code === 11000) {
-                // console.log({ errs: err.errorResponse.writeErrors.map((ex: any) => e.err.errmsg) })
+        } catch (ex) {
+            if ((ex as MongoWriteConcernError)?.errorResponse && (ex as MongoWriteConcernError)?.errorResponse.code === 11000) {
+                // console.log({ errs: err.errorResponse.writeErrors.map((ex) => e.err.errmsg) })
                 if (ignoreDup) {
                     if (Array.isArray(doc))
                         return {
-                            inserted: ex.result.insertedCount,
-                            ids: ex.result.insertedIds,
-                            ignored: ex.errorResponse.writeErrors.map((ex: any) => RJson.parse(ex.err.errmsg.substr(ex.err.errmsg.indexOf('dup key:') + 9)))
+                            inserted: (ex as MongoWriteConcernError).result.insertedCount,
+                            ids: (ex as MongoWriteConcernError).result.insertedIds,
+                            ignored: (ex as MongoWriteConcernError).errorResponse.writeErrors.map((ex: WriteError) => RJson.parse(ex.err.errmsg.substr(ex.err.errmsg.indexOf('dup key:') + 9)))
                         }
                     else
-                        return { inserted: 0, ids: [], ignored: [ex.errorResponse.keyValue] }
+                        return { inserted: 0, ids: [], ignored: [(ex as MongoWriteConcernError).errorResponse.keyValue] }
                 }
             }
             throw (ex)
@@ -77,7 +77,7 @@ export default class clsMongo {
 
     async getNext(id?: string, otherCollection?: string) {
         const conn = await this.connect(otherCollection)
-        const result = conn.find({ _id: { "$gt": new ObjectId(id) } }).limit(1)
+        return conn.find({ _id: { "$gt": new ObjectId(id) } }).limit(1)
     }
 
     async insert(doc: object | object[], otherCollection?: string) {
@@ -99,6 +99,7 @@ export default class clsMongo {
         const conn = await this.connect()
         const result = await conn.createIndex(indexCols.reduce((o, i) => (o[i] = 1, o), {}), unique ? { unique: true } : undefined)
         this.logger.db({ indicesSetup: { collection: this.baseCollection, indexCols, unique } });
+        return result
     }
 
     async close() {
@@ -106,7 +107,7 @@ export default class clsMongo {
     }
 
     async ping() {
-        const conn = await this.connect()
+        await this.connect()
         const res = await this.client.db("admin").command({ ping: 1 })
         return res.ok
     }

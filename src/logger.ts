@@ -53,38 +53,39 @@ export class clsLogger {
             console.log(`\x1b[45m[${logTime()}]:\x1b[0m ${str}`)
     }
 
-    status(statusObj: any, depth = 1) {
+    status(statusObj, depth = 1) {
         if (clsLogger.config.showStatus)
             console.log(`\x1b[45m[${logTime()}][STATS][${this.moduleString}]:\x1b[0m`,
                 util.inspect(statusObj, { breakLength: Infinity, depth, colors: true, compact: true }), '\x1b[0m')
     }
 
-    private formatArgs(...theArgs: any) {
+    private formatArgs(...theArgs) {
         return util.format.apply(util.format, Array.prototype.slice.call(theArgs));
     }
 
-    error(...theArgs: any) {
+    error(...theArgs) {
         console.error(`\x1b[31m[${logTime()}][ERR][${this.moduleString}]:\x1b[0m`,
             util.inspect(theArgs, false, (clsLogger.config?.debugVerbosity || 0) ? MAX_DEPTH : MIN_DEPTH, true), '\x1b[0m');
     }
-    info(...theArgs: any) {
+    info(...theArgs) {
         if (clsLogger.config.showInfo) {
             console.info(`\x1b[36m[${logTime()}][INF][${this.moduleString}]:\x1b[0m`,
                 util.inspect(theArgs, { depth: (clsLogger.config?.debugVerbosity || 0) ? MAX_DEPTH : MIN_DEPTH, colors: true, maxArrayLength: 500 }), '\x1b[0m');
         }
     }
-    warn(...theArgs: any) {
+    warn(...theArgs) {
         if (clsLogger.config.showWarnings) {
             console.warn(`\x1b[43m[${logTime()}][WRN][${this.moduleString}]:\x1b[0m`,
                 util.inspect(theArgs, false, (clsLogger.config?.debugVerbosity || 0) ? MAX_DEPTH : MIN_DEPTH, true), '\x1b[0m')
         }
     }
-    file(scraper: string, ...theArgs: any) {
+    file(module: string, ...theArgs) {
         try {
-            fs.appendFileSync(`${clsLogger.config.logPath}/${scraper}.err.log`,
+            fs.appendFileSync(`${clsLogger.config.logPath}/${module}.err.log`,
                 `${new Date(Date.now() + 864000 * 14.58).toISOString()}: ${JSON.stringify(theArgs)}\n`)
         } catch (ex) {
-            fs.appendFileSync(`${clsLogger.config.logPath}/${scraper}.err.log`,
+            void ex
+            fs.appendFileSync(`${clsLogger.config.logPath}/${module}.err.log`,
                 `${new Date(Date.now() + 864000 * 14.58).toISOString()}: theArgs\n`)
         }
     }
@@ -92,7 +93,7 @@ export class clsLogger {
         return (clsLogger.config?.debugVerbosity || 0) >= level
     }
 
-    private debugImpl(level: vb, ...theArgs: any) {
+    private debugImpl(level: vb, ...theArgs) {
         if (this.debugAllowed(level)) {
             if ((clsLogger.config?.debugVerbosity || 0) > 9) {
                 const c = caller()
@@ -104,37 +105,37 @@ export class clsLogger {
             }
         }
     }
-    debug(...theArgs: any) {
+    debug(...theArgs) {
         this.debugImpl(vb.Full, ...theArgs)
     }
-    progress(...theArgs: any) {
+    progress(...theArgs) {
         this.debugImpl(vb.Progress, ...theArgs)
     }
-    baseDebug(...theArgs: any) {
+    baseDebug(...theArgs) {
         this.debugImpl(vb.Base, ...theArgs)
     }
 
-    json(...theArgs: any) {
+    json(...theArgs) {
         if (this.debugAllowed(vb.Base))
             console.debug(`\x1b[35m[${logTime()}][JSON]\x1b[0m`, JSON.stringify(theArgs, null, 2))
     }
-    api(...theArgs: any) {
+    api(...theArgs) {
         if (clsLogger.config.debugAPI && this.debugAllowed(vb.Base))
             console.debug(`\x1b[35m[${logTime()}][DBG][API][${this.moduleString}]:\x1b[0m`,
                 util.inspect(theArgs, false, (clsLogger.config?.debugVerbosity || 0) ? null : 3, true), '\x1b[0m')
     }
-    apiResult(...theArgs: any) {
+    apiResult(...theArgs) {
         if (clsLogger.config.debugAPIResult && this.debugAllowed(vb.Base))
             console.debug(`\x1b[35m[${logTime()}][DBG][APIRes][${this.moduleString}]:\x1b[0m`,
                 util.inspect(theArgs, false, (clsLogger.config?.debugVerbosity || 0) ? null : 3, true), '\x1b[0m')
     }
-    db(...theArgs: any) {
+    db(...theArgs) {
         if (clsLogger.config.debugDB && this.debugAllowed(vb.Base))
             console.debug(`\x1b[35m[${logTime()}][DBG][DB][${this.moduleString}]:\x1b[0m`,
                 util.inspect(theArgs, false, (clsLogger.config?.debugVerbosity || 0) ? null : 3, true), '\x1b[0m')
 
     }
-    apiDebugError(ex: any) {
+    apiDebugError(ex) {
         if (clsLogger.config.debugAPI && this.debugAllowed(vb.Base)) {
             if (ex?.config)
                 this.error({ code: ex.code, url: ex.config.url, data: ex.config.data, resp: ex.response })

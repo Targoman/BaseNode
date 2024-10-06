@@ -1,17 +1,17 @@
 import { copyFileSync, writeFileSync } from "fs"
 import { IntfKeyVal } from "./interfaces"
-import { clsLogger, gLogger } from "./logger"
+import { clsLogger } from "./logger"
 
 let activeconfigFile: string | null = null
-export default function initConfigs(args: any, baseConfigs: any) {
-    let conf: any = {}
+export default function initConfigs(args, baseConfigs) {
+    let conf : IntfKeyVal= {}
     if (args.configFile) {
         try {
             activeconfigFile = (args.configFile.startsWith("/") ? "" : (process.cwd() + "/")) + args.configFile
             /* eslint-disable */
             conf = require(activeconfigFile)
 
-        } catch (ex:any) {
+        } catch (ex: any) {
             throw new Error("Unable to load config file: " + args.configFile)
         }
     } else {
@@ -20,7 +20,7 @@ export default function initConfigs(args: any, baseConfigs: any) {
             activeconfigFile = process.cwd() + "/.config.json"
             /* eslint-disable */
             conf = require(activeconfigFile)
-        } catch (ex: any) {
+        } catch (ex) {
             //Intentionaly empty
         }
     }
@@ -43,7 +43,7 @@ export function updateConfigFile(toBeUpdated: IntfKeyVal) {
     if (activeconfigFile) {
         /* eslint-disable */
         const oldConfigs = require(activeconfigFile)
-        const newConfigs = {...oldConfigs, ...toBeUpdated}
+        const newConfigs = { ...oldConfigs, ...toBeUpdated }
         copyFileSync(activeconfigFile, activeconfigFile + ".back-" + (new Date).toISOString())
         writeFileSync(activeconfigFile, JSON.stringify(newConfigs, null, 2))
     }

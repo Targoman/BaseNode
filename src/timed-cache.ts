@@ -12,7 +12,7 @@
  * Shortcut function for checking if an object has
  * a given property directly on itself.
  */
-const has = (obj: any, key: string) => obj !== null && Object.prototype.hasOwnProperty.call(obj, key);
+const has = (obj, key: string) => obj !== null && Object.prototype.hasOwnProperty.call(obj, key);
 
 /**
  * A prefix used to forbid access to internal properties
@@ -24,7 +24,7 @@ const prefix = '__cache__';
  * If the key is an object, we serialize it, so it
  * can be cached transparently.
  */
-const serialize = function (key: any) {
+const serialize = function (key) {
     if (typeof key !== 'string') {
         return (prefix + JSON.stringify(key));
     }
@@ -33,7 +33,7 @@ const serialize = function (key: any) {
 
 interface IntfOptions {
     ttl?: number
-    callback?: () => {/**/ }
+    callback?: () => unknown
 }
 
 /**
@@ -42,7 +42,7 @@ interface IntfOptions {
 class Cache<itmplType> {
     private cache: { [key: string]: { handle: NodeJS.Timeout, time: Date, data: itmplType, callback?: (key: string, val: itmplType) => void } }
     private defaultTtl: number
-    constructor(options = { defaultTtl: 60 * 1000}) {
+    constructor(options = { defaultTtl: 60 * 1000 }) {
         // The cache storage.
         this.cache = {};
         // The default cached objects expiration
@@ -85,7 +85,7 @@ class Cache<itmplType> {
      * given key if it exists, returns an undefined
      * value otherwise.
      */
-    get(key: string) {
+    get(key: string) : itmplType | undefined{
         const value = this.cache[serialize(key)];
         return (value && value.data);
     }

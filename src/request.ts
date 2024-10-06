@@ -1,5 +1,5 @@
 import axios, { AxiosError, AxiosResponse, AxiosRequestConfig } from "axios";
-import { sleep } from "./functions";
+import { exMsg, sleep } from "./functions";
 import { IntfKeyVal, IntfProxyConfigs } from "./interfaces"
 import { clsLogger, gLogger } from "./logger";
 import { IntfAllocatedProxy, IntfProxy, releaseProxy, renewProxy } from "./proxyManager";
@@ -27,8 +27,10 @@ export function configWithUA(reqParams: IntfRequestParams) {
     }
     if (reqParams.extraHeaders && reqParams.conf) {
         Object.keys(reqParams.extraHeaders).forEach(key => {
-            if (reqParams.conf && reqParams.extraHeaders)
-                reqParams.conf.headers = { ...reqParams.conf?.headers, [key]: reqParams.extraHeaders[key] }
+            if (reqParams.conf && reqParams.extraHeaders) {
+                const allHeaders = { ...reqParams.conf?.headers, [key]: reqParams.extraHeaders[key] }
+                reqParams.conf.headers = allHeaders
+            }
         })
     }
 
@@ -79,8 +81,8 @@ export interface IntfRequestParams {
     ua?: string,
     conf?: AxiosRequestConfig,
     extraHeaders?: IntfKeyVal,
-    onSuccess: (res: any, retries: number, extra: IntfSuccessExtraParams) => Promise<any>,
-    onFail?: (ex: AxiosError, retries: number) => Promise<any>,
+    onSuccess: (res: unknown, retries: number, extra: IntfSuccessExtraParams) => Promise<unknown>,
+    onFail?: (ex: AxiosError, retries: number) => Promise<unknown>,
     onReqChange?: (changes: IntfReqChangeParams) => void
     oErrorMessage?: string,
     allocatedProxy: IntfAllocatedProxy,
@@ -94,7 +96,7 @@ export async function axiosGet(logger: clsLogger, proxyConf: IntfProxyConfigs, p
 
     return await axios
         .get(params.url, configWithUA(params))
-        .then(async (res:any) => {
+        .then(async (res: AxiosResponse) => {
             const data = res.data
             if (typeof data === "string" && res.data.length < 5000 && res.data.includes("arvancloud")) {
                 const cookie = await getArvanCookie(logger, params.url, (new URL(params.url).hostname), params.allocatedProxy.proxy)
@@ -110,13 +112,13 @@ export async function axiosGet(logger: clsLogger, proxyConf: IntfProxyConfigs, p
         });
 }
 
-export async function axiosPost(logger: clsLogger, proxyConf: IntfProxyConfigs, params: IntfRequestParams, data: any, retries = 1) {
+export async function axiosPost(logger: clsLogger, proxyConf: IntfProxyConfigs, params: IntfRequestParams, data, retries = 1) {
     const conf = configWithUA(params)
     logger.api(`POST(${retries}): ` + params.url, data, params.conf?.params, params.conf?.headers, params.allocatedProxy.proxy.port, params.cookie)
 
     return await axios
         .post(params.url, data, conf)
-        .then(async (res:any) => {
+        .then(async (res: AxiosResponse) => {
             const data = res.data
             if (typeof data === "string" && res.data.length < 5000 && res.data.includes("arvancloud")) {
                 const cookie = await getArvanCookie(logger, params.url, (new URL(params.url).hostname), params.allocatedProxy.proxy)
@@ -150,12 +152,12 @@ export async function getArvanCookie(logger: clsLogger, url: string, domain: str
 }
 
 /********************************************/
-async function onAxiosError(logger: clsLogger, proxyConf: IntfProxyConfigs, err: AxiosError, params: IntfRequestParams, retries: number, callback: any) {
-    const onProxyFailed = async (ex: string) => {
-        logger.error(err)
-        params.onReqChange && params.onReqChange({ allocatedProxy: { ...params.allocatedProxy, proxy: { failed: true, agent: null, port: params.allocatedProxy.proxy.port, ip: `${err}` } } })
-        params.allocatedProxy = await renewProxy(proxyConf, params.allocatedProxy, err.message)
-        params.onReqChange && params.onReqChange({ allocatedProxy: params.allocatedProxy })
+async function onAxiosError(logger: clsLogger, proxyConf: IntfProxyConfigs, err: AxiosError, params: IntfRequestParams, retries: number, callback) {
+    const onProxyFailed = async (ex: unknown) => {
+        logger.debug(ex)
+        if(params.onReqChange) params.onReqChange({ allocatedProxy: { ...params.allocatedProxy, proxy: { failed: true, agent: null, port: params.allocatedProxy.proxy.port, ip: `${exMsg(ex)}` } } })
+        params.allocatedProxy = await renewProxy(proxyConf, params.allocatedProxy, exMsg(ex))
+        if(params.onReqChange) params.onReqChange({ allocatedProxy: params.allocatedProxy })
         await sleep(1000)
         return await callback(params.cookie);
     }

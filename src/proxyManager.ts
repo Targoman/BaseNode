@@ -1,10 +1,10 @@
 import axios, { AxiosResponse } from "axios";
 import { SocksProxyAgent } from "socks-proxy-agent";
-import { sleep } from "./functions";
-import { clsLogger, gLogger } from "./logger";
+import { exMsg, sleep } from "./functions";
 import Cache from './timed-cache';
 import { ALWAYS, LOCAL_PROXY, MINUTE, SECOND } from "./constants";
 import { IntfProxyConfigs } from "./interfaces";
+import { clsLogger, gLogger } from "./logger";
 
 export interface IntfProxy {
     agent: SocksProxyAgent | null
@@ -29,7 +29,7 @@ export interface IntfProxySettings {
 export interface IntfProxyItemObject {
     err?: string
     settings: IntfProxySettings
-    object: any
+    object
 }
 
 interface IntfProxyCacheItem {
@@ -40,7 +40,7 @@ interface IntfProxyCacheItem {
 const PROXY_FAILED = "FAILED"
 const PROXY_NOTFOUND = "NOTFOUND"
 
-const proxyCache = new Cache({ defaultTtl: 1 * MINUTE })
+const proxyCache = new Cache<IntfProxyCacheItem>({ defaultTtl: 1 * MINUTE })
 function updateCache(proxy: IntfProxy, tag: string, fingerprint: string, item: IntfProxyItemObject): IntfAllocatedProxy {
     const cachedItem: IntfProxyCacheItem = proxyCache.get(proxy.port) || { proxy, inUseBy: {} }
     cachedItem.proxy = proxy
@@ -76,7 +76,7 @@ export async function allocateProxy(
     tag: string,
     fingerprint: string,
     settings: IntfProxySettings = { maxReuse: 0, logger: new clsLogger("Proxy") },
-    object?: any,
+    object?,
     forcedChange = false
 ): Promise<IntfAllocatedProxy> {
     let oldAllocatedPort: string | undefined
@@ -112,8 +112,8 @@ export async function allocateProxy(
         if (nextProxyIndex >= allProxyPorts.length)
             nextProxyIndex = 0
 
-        const candidatePort = allProxyPorts.at(nextProxyIndex)
-        const cacheItem: IntfProxyCacheItem = proxyCache.get(candidatePort)
+        const candidatePort = allProxyPorts.at(nextProxyIndex) || "0"
+        const cacheItem: IntfProxyCacheItem | undefined = proxyCache.get(candidatePort)
         checkedPortsCount++
         nextProxyIndex++
         if (cacheItem) {
@@ -137,7 +137,7 @@ export async function allocateProxy(
             ip = await axios
                 .get("https://api.ipify.org", { httpsAgent: agent, httpAgent: agent })
                 .then((res: AxiosResponse) => res.data)
-                .catch((ex: any) => ex?.message === "getaddrinfo ENOTFOUND api.ipify.org" ? PROXY_NOTFOUND : PROXY_FAILED)
+                .catch((ex) => exMsg(ex) === "getaddrinfo ENOTFOUND api.ipify.org" ? PROXY_NOTFOUND : PROXY_FAILED)
         } else {
             ip = "localhost"
             agent = null
@@ -165,7 +165,7 @@ export async function renewProxy(conf: IntfProxyConfigs, oldProxy: IntfAllocated
 }
 
 export function proxyState(port: string) {
-    const cacheItem: IntfProxyCacheItem = proxyCache.get(port)
+    const cacheItem: IntfProxyCacheItem | undefined = proxyCache.get(port)
 
     if (cacheItem) {
         if (cacheItem.proxy.failed) return "FAILED"
