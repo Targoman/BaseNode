@@ -1,6 +1,6 @@
 import { readdirSync, statSync } from "fs";
 import { exDB } from "./exceptions";
-import { IntfDBConfigs } from "./interfaces";
+import { IntfDBConfigs, IntfKeyVal } from "./interfaces";
 import { MINUTE, SECOND } from "./constants";
 
 export async function sleep(ms: number) {
@@ -119,3 +119,4 @@ export function ms2HRF(ms: number) {
 export function exMsg(ex: unknown): string {
     return ex instanceof Error ? ex.message : (typeof ex === "string" ? ex : "")
 }
+

@@ -18,7 +18,7 @@
         "test": "run-s lint:fix _clear _tsc _start"
     },
     "imports": {
-        "/@BaseNode/*": "./.build/src/*.js"
+        "#BaseNode/*": "./.build/src/*.js"
     },
     "dependencies": {
         "@vinejs/compiler": "^2.5.0",

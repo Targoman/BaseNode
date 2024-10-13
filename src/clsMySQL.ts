@@ -13,11 +13,19 @@ export class exMySQL extends exDB {
 }
 
 export interface IntfCreateResponse {
+    discriminator: "IntfCreateResponse"
     firstInsertedId: string
     insertedRows: number
     updatedRows: number
 }
 
+export interface IntfUpdateResponse {
+    updatedRows: number
+}
+
+export interface IntfDeleteResponse {
+    deletedRows: number
+}
 
 export default class clsMySQL {
     private pool: Bluebird<mysql.Pool>;

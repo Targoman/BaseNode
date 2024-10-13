@@ -1,6 +1,6 @@
-import clsMySQL from "/@BaseNode/clsMySQL"
-import { exInvalidQuery } from "/@BaseNode/exceptions"
-import { IntfKeyVal, IntfQueryParams } from "/@BaseNode/interfaces"
+import clsMySQL, { IntfUpdateResponse } from "#BaseNode/clsMySQL"
+import { exInvalidQuery } from "#BaseNode/exceptions"
+import { IntfKeyVal, IntfQueryParams } from "#BaseNode/interfaces"
 import { removeUndefined } from "./functions"
 import Joi from "joi"
 
@@ -45,6 +45,12 @@ interface IntfColconfigs {
 export interface IntfMultiRow {
     tc: number
     rows: Array<unknown>
+}
+
+export interface IntfSPResult {
+    tc?: number
+    rows?: Array<unknown>
+    direct?: IntfKeyVal
 }
 
 export interface IntfMultiORM {
@@ -124,12 +130,12 @@ export abstract class clsORM {
 
     private isComplexChange(colSpec: clsColumn, val: unknown) {
         return colSpec.isObject === false && (typeof val === "object") && (
-            Object().hasOwn(val, 'min')
-            || Object().hasOwn(val, 'max')
-            || Object().hasOwn(val, 'fmin')
-            || Object().hasOwn(val, 'fmax')
-            || Object().hasOwn(val, 'ifnull')
-            || Object().hasOwn(val, 'ifnullKeep')
+            Object.hasOwn((val as object), 'min')
+            || Object.hasOwn((val as object), 'max')
+            || Object.hasOwn((val as object), 'fmin')
+            || Object.hasOwn((val as object), 'fmax')
+            || Object.hasOwn((val as object), 'ifnull')
+            || Object.hasOwn((val as object), 'ifnullKeep')
         )
     }
 
@@ -145,16 +151,16 @@ export abstract class clsORM {
         if (!this.isComplexChange(colSpec, val))
             return this.valToStringIfNeeded(colSpec, val)
         else {
-            if (Object().hasOwn(val, 'fmin')) return this.valToStringIfNeeded(colSpec, val.fmin)
-            if (Object().hasOwn(val, 'fmax')) return this.valToStringIfNeeded(colSpec, val.fmax)
-            if (Object().hasOwn(val, 'min')) return this.valToStringIfNeeded(colSpec, val.min)
-            if (Object().hasOwn(val, 'max')) return this.valToStringIfNeeded(colSpec, val.max)
-            if (Object().hasOwn(val, 'ifnull')) return this.valToStringIfNeeded(colSpec, val.ifnull)
-            if (Object().hasOwn(val, 'ifnullKeep')) return this.valToStringIfNeeded(colSpec, val.ifnullKeep)
+            if (Object.hasOwn(val, 'fmin')) return this.valToStringIfNeeded(colSpec, val.fmin)
+            if (Object.hasOwn(val, 'fmax')) return this.valToStringIfNeeded(colSpec, val.fmax)
+            if (Object.hasOwn(val, 'min')) return this.valToStringIfNeeded(colSpec, val.min)
+            if (Object.hasOwn(val, 'max')) return this.valToStringIfNeeded(colSpec, val.max)
+            if (Object.hasOwn(val, 'ifnull')) return this.valToStringIfNeeded(colSpec, val.ifnull)
+            if (Object.hasOwn(val, 'ifnullKeep')) return this.valToStringIfNeeded(colSpec, val.ifnullKeep)
         }
     }
 
-    createChanges(colMap: IntfKeyVal) {
+    createChanges(colMap: IntfKeyVal): IntfKeyVal {
         const schema: { [key: string]: Joi.AnySchema } = {}
         const plainColMap: IntfKeyVal = {}
         Object.keys(colMap).forEach(colName => {
@@ -167,15 +173,17 @@ export abstract class clsORM {
             changes[colName] = this[colName].toDB(changes[colName])
             if (this.isComplexChange(this[colName], colMap[colName])) {
                 const val = colMap[colName]
-                if (Object().hasOwn(val, 'fmin')) changes[colName] = { fmin: changes[colName] }
-                if (Object().hasOwn(val, 'fmax')) changes[colName] = { fmax: changes[colName] }
-                if (Object().hasOwn(val, 'min')) changes[colName] = { min: changes[colName] }
-                if (Object().hasOwn(val, 'max')) changes[colName] = { max: changes[colName] }
-                if (Object().hasOwn(val, 'ifnull')) changes[colName] = { ifnull: changes[colName] }
-                if (Object().hasOwn(val, 'ifnullKeep')) changes[colName] = { ifnullKeep: changes[colName] }
+                if (typeof val === 'object') {
+                    if (Object.hasOwn((val as object), 'fmin')) changes[colName] = { fmin: changes[colName] }
+                    if (Object.hasOwn((val as object), 'fmax')) changes[colName] = { fmax: changes[colName] }
+                    if (Object.hasOwn((val as object), 'min')) changes[colName] = { min: changes[colName] }
+                    if (Object.hasOwn((val as object), 'max')) changes[colName] = { max: changes[colName] }
+                    if (Object.hasOwn((val as object), 'ifnull')) changes[colName] = { ifnull: changes[colName] }
+                    if (Object.hasOwn((val as object), 'ifnullKeep')) changes[colName] = { ifnullKeep: changes[colName] }
+                }
             }
         })
-        return changes
+        return changes as IntfKeyVal
     }
 
     private validateCols(cols?: string[]) {
@@ -430,7 +438,7 @@ SELECT ${columns.selectors.join(",\n")}
         )
     }
 
-    public async update(selectorConditions: string[], condVals: Array<unknown>, params: IntfKeyVal) {
+    public async update(selectorConditions: string[], condVals: Array<unknown>, params: IntfKeyVal): Promise<IntfUpdateResponse> {
         const changes: string[] = []
         let values: Array<unknown> = []
         Object.keys(params).forEach(key => {
@@ -446,13 +454,15 @@ SELECT ${columns.selectors.join(",\n")}
                     values.push(JSON.stringify(value))
                 } else if (this.isComplexChange(col.specs, params[key])) {
                     const val = params[key]
-                    if (Object().hasOwn(val, 'fmin')) changes.push(`${key}=LEAST(COALESCE(${key},0), ?)`)
-                    if (Object().hasOwn(val, 'fmax')) changes.push(`${key}=GREATEST(COALESCE(${key},0), ?)`)
-                    if (Object().hasOwn(val, 'min')) changes.push(`${key}=LEAST(${key}, ?)`)
-                    if (Object().hasOwn(val, 'max')) changes.push(`${key}=GREATEST(${key}, ?)`)
-                    if (Object().hasOwn(val, 'ifnull')) changes.push(`${key}=IFNULL(${key}, ?)`)
-                    if (Object().hasOwn(val, 'ifnullKeep')) changes.push(`${key}=IFNULL(?, ${key})`)
+                    if(typeof val === "object") {
+                    if (Object.hasOwn((val as object), 'fmin')) changes.push(`${key}=LEAST(COALESCE(${key},0), ?)`)
+                    if (Object.hasOwn((val as object), 'fmax')) changes.push(`${key}=GREATEST(COALESCE(${key},0), ?)`)
+                    if (Object.hasOwn((val as object), 'min')) changes.push(`${key}=LEAST(${key}, ?)`)
+                    if (Object.hasOwn((val as object), 'max')) changes.push(`${key}=GREATEST(${key}, ?)`)
+                    if (Object.hasOwn((val as object), 'ifnull')) changes.push(`${key}=IFNULL(${key}, ?)`)
+                    if (Object.hasOwn((val as object), 'ifnullKeep')) changes.push(`${key}=IFNULL(?, ${key})`)
                     values.push(plainVal)
+                    }
                 } else {
                     changes.push(`${key}=?`)
                     values.push(value)
@@ -468,7 +478,7 @@ SELECT ${columns.selectors.join(",\n")}
             `, values)
     }
 
-    public async updateIfAvailable(selectorConditions: string[], condVals: Array<unknown>, changes: IntfKeyVal) {
+    public async updateIfAvailable(selectorConditions: string[], condVals: Array<unknown>, changes: IntfKeyVal): Promise<IntfUpdateResponse> {
         await this.selectOne({ cols: [this.cols[0].alias], conditions: selectorConditions, condVals })
         return await this.update(selectorConditions, condVals, changes)
     }

@@ -22,13 +22,19 @@
       "../BaseNode/src"
     ],
     "paths": {
-      "/@BaseNode/*": [
+      "#BaseNode/*": [
         "../BaseNode/src/*",
         "../../BaseNode/src/*",
         "../../../BaseNode/src/*",
         "../../../../BaseNode/src/*"
       ],
-      "/@Common/*": [
+      "#BaseNode/*": [
+        "../BaseNode/src/*",
+        "../../BaseNode/src/*",
+        "../../../BaseNode/src/*",
+        "../../../../BaseNode/src/*"
+      ],
+      "#Common/*": [
         "../Common/src/*",
         "../../Common/src/*",
         "../../../Common/src/*",
