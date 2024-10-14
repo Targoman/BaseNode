@@ -1,7 +1,7 @@
 #!/bin/sh
 
 ln -sv ../BaseNode/.hintrc .
-ln -sv ../BaseNode/.eslintrc.js .
+ln -sv ../BaseNode/eslint.config.mjs .
 ln -sv ../BaseNode/obfuscator.config.json .
 ln -sv ../BaseNode/tsconfig.json .
 ln -sv ../BaseNode/rollup.config.mjs .

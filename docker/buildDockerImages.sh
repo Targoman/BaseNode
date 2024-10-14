@@ -53,12 +53,12 @@ sudo docker pull ${ImageName}:builder
 # fi
 
 if [ $rebuild -eq 1 ];then
-    sudo docker build -t ${ImageName}:builder --build-arg TARGET_APP=${TARGET} -f ./docker/Dockerfile.builder . 
+    sudo docker build -t ${ImageName}:builder --build-arg TARGET_APP=${TARGET} -f ./BaseNode/docker/Dockerfile.builder . 
     if [ $? -ne 0 ];then exit 1; fi 
     echo $fingerprint > $fingerprintPath
 fi
 
-sudo docker build -f ./docker/Dockerfile.app --build-arg TARGET_APP=${TARGET} --build-arg BUILDER_IMAGE=${ImageName}:builder -t ${ImageName}:$NewVersion . && \
+sudo docker build -f ./BaseNode/docker/Dockerfile.app --build-arg TARGET_APP=${TARGET} --build-arg BUILDER_IMAGE=${ImageName}:builder -t ${ImageName}:$NewVersion . && \
 sudo docker rmi "$ImageName:latest" || true && \
 sudo docker tag "$ImageName:$NewVersion" "$ImageName:latest" && \
 sudo docker push "$ImageName:$NewVersion"  && \

@@ -120,3 +120,7 @@ export function exMsg(ex: unknown): string {
     return ex instanceof Error ? ex.message : (typeof ex === "string" ? ex : "")
 }
 
+export function hasOwnProp(obj: unknown, prop: string) {
+    return  typeof obj === "object" && obj && Object.hasOwn(obj, prop)
+}
+

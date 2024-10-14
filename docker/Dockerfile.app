@@ -5,9 +5,9 @@ FROM $BUILDER_IMAGE as builder
 ARG TARGET_APP
 WORKDIR /usr/src/app/$TARGET_APP
 COPY ./$TARGET_APP/src /usr/src/app/$TARGET_APP/src
-COPY ./$TARGET_APP/.eslintrc.js ./$TARGET_APP/public* /usr/src/app/$TARGET_APP/public/
+COPY ./$TARGET_APP/eslint.config.mjs ./$TARGET_APP/public* /usr/src/app/$TARGET_APP/public/
 COPY ./Common/src /usr/src/app/Common/src
-COPY ./Base/src /usr/src/app/Base/src
+COPY ./BaseNode/src /usr/src/app/BaseNode/src
 RUN ls -la && find public && yarn container 
 
 ##############################################333
