@@ -48,17 +48,17 @@ fi
 LastVersion=`sudo docker images | grep "$ImageName" | cut -d ' ' -f 4 | sort | tail -n 1`
 
 echo "=== cheking if old builder image is found"
-sudo docker pull ${ImageName}:builder
+#sudo docker pull ${ImageName}:builder
 # if [ $? -ne 0 ]||[ $rebuild -eq 1 ];then
 # fi
 
 if [ $rebuild -eq 1 ];then
-    sudo docker build -t ${ImageName}:builder --build-arg TARGET_APP=${TARGET} -f ./BaseNode/docker/Dockerfile.builder . 
+    sudo docker build -t ${ImageName}:builder --build-arg TARGET_APP=${TARGET} -f ./submodules/BaseNode/docker/Dockerfile.builder . 
     if [ $? -ne 0 ];then exit 1; fi 
     echo $fingerprint > $fingerprintPath
 fi
 
-sudo docker build -f ./BaseNode/docker/Dockerfile.app --build-arg TARGET_APP=${TARGET} --build-arg BUILDER_IMAGE=${ImageName}:builder -t ${ImageName}:$NewVersion . && \
+sudo docker build -f ./submodules/BaseNode/docker/Dockerfile.app --build-arg TARGET_APP=${TARGET} --build-arg BUILDER_IMAGE=${ImageName}:builder -t ${ImageName}:$NewVersion . && \
 sudo docker rmi "$ImageName:latest" || true && \
 sudo docker tag "$ImageName:$NewVersion" "$ImageName:latest" && \
 sudo docker push "$ImageName:$NewVersion"  && \

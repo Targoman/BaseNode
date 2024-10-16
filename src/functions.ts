@@ -1,6 +1,5 @@
-import { readdirSync, statSync } from "fs";
 import { exDB } from "./exceptions";
-import { IntfDBConfigs, IntfKeyVal } from "./interfaces";
+import { IntfDBConfigs } from "./interfaces";
 import { MINUTE, SECOND } from "./constants";
 
 export async function sleep(ms: number) {
@@ -56,21 +55,6 @@ export function prompt(message: string) {
     return new Promise<string>((resolve) => rl.question(message, resolve));
 }
 
-export function findFile(dir: string, fileName: string) {
-    const files = readdirSync(dir);
-
-    for (const file of files) {
-        const filePath = `${dir}/${file}`;
-        const fileStat = statSync(filePath);
-        if (fileStat.isDirectory()) {
-            const found = findFile(filePath, fileName);
-            if (found) return found
-        }
-        else if (file === fileName)
-            return filePath
-    }
-}
-
 export function enumStr(enu, val) {
     for (var k in enu) if (enu[k] == val) return k;
     return undefined
@@ -121,6 +105,7 @@ export function exMsg(ex: unknown): string {
 }
 
 export function hasOwnProp(obj: unknown, prop: string) {
-    return  typeof obj === "object" && obj && Object.hasOwn(obj, prop)
+    return typeof obj === "object" && obj && Object.hasOwn(obj, prop)
 }
 
+export function concatPath(base: string, path: string) { return base + (base.endsWith("/") ? "" : "/") + path }

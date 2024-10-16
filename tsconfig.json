@@ -19,14 +19,14 @@
       "./src",
       "./test",
       "../Common/src",
-      "../BaseNode/src"
+      "../submodules/BaseNode/src"
     ],
     "paths": {
       "#BaseNode/*": [
-        "../BaseNode/src/*",
-        "../../BaseNode/src/*",
-        "../../../BaseNode/src/*",
-        "../../../../BaseNode/src/*"
+        "../submodules/BaseNode/src/*",
+        "../../submodules/BaseNode/src/*",
+        "../../../submodules/BaseNode/src/*",
+        "../../../../submodules/BaseNode/src/*"
       ],
       "#Common/*": [
         "../Common/src/*",

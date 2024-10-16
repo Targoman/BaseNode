@@ -7,8 +7,8 @@ WORKDIR /usr/src/app/$TARGET_APP
 COPY ./$TARGET_APP/src /usr/src/app/$TARGET_APP/src
 COPY ./$TARGET_APP/eslint.config.mjs ./$TARGET_APP/public* /usr/src/app/$TARGET_APP/public/
 COPY ./Common/src /usr/src/app/Common/src
-COPY ./BaseNode/src /usr/src/app/BaseNode/src
-RUN ls -la && find public && yarn container 
+COPY ./submodules/BaseNode/src /usr/src/app/submodules/BaseNode/src
+RUN ls /usr/src/app/ && echo "===========" && find public && yarn container 
 
 ##############################################333
 FROM node:current-alpine

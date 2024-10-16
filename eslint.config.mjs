@@ -22,7 +22,7 @@ export default [
     languageOptions: { parserOptions: { parser: tseslint.parser } },
     rules: {
       "vue/multi-word-component-names": ["error", {
-        "ignores": ["index"]
+        "ignores": ["index", "view"]
       }]
     }
   },
