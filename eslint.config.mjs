@@ -23,7 +23,8 @@ export default [
     rules: {
       "vue/multi-word-component-names": ["error", {
         "ignores": ["index", "view"]
-      }]
+      }],
+      "vue/multi-word-component-names":0
     }
   },
   {
