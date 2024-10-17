@@ -36,7 +36,6 @@
       ]
     },
     "types": [
-      "long",
       "node"
     ],
     "lib": [

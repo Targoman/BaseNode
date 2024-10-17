@@ -34,7 +34,6 @@ function encryptAndSigned(payload: object): string {
     const head = { typ: "JWT", alg: EJWTConf.hashAlgorithm, }
     const data = Base64.encode(JSON.stringify(head),true) + '.' + Base64.encode(JSON.stringify(payload), true)
     const sign = hashAsSign(data)
-    console.log({sign: sign.toString()})
     return data + '.' + sign
 }
 

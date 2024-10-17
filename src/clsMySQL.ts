@@ -49,7 +49,7 @@ export default class clsMySQL {
 
     get schema() { return this._schema }
 
-    private async runQuery(queryStr: string, vars?: Array<unknown> | { [key: string]:unknown }, maxTries = 3) {
+    private async runQuery(queryStr: string, vars?: Array<unknown> | { [key: string]: unknown }, maxTries = 3) {
         try {
             const conn = await (await this.pool).getConnection();
             try {
@@ -61,6 +61,7 @@ export default class clsMySQL {
             }
         } catch (ex) {
             if ((ex as MysqlError)?.code == "ER_DUP_ENTRY") throw ex;
+            if ((ex as MysqlError)?.errno === 1644) throw ex
 
             if (--maxTries > 0) {
                 this.logger.db("Retrying query ...");

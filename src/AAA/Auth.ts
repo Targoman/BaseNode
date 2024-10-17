@@ -1,19 +1,29 @@
+import { clsORM } from "../clsORM"
+import EJWT from "../EJWT"
+import { enuTokenActorType } from "../EJWT/interfaces"
+
 /*import EJWT from "../EJWT"
 import { enuTokenActorType } from "../EJWT/interfaces"
 */
-enum enuUserApprovalState {
+export enum enuUserApprovalState {
     NotApproved = 'NotApproved',
     MobileOnly = 'MobileOnly',
     EmailOnly = 'EmailOnly',
     All = 'All'
 }
 
-enum enuUserStatus {
+export enum enuUserStatus {
     Active = "Active",
     Removed = "Removed",
     Banned = "Banned",
     MustChangePass = "MustChangePass",
     Validate = "Validate",
+}
+
+export enum enuUserGender {
+    Female ='Female',
+    Male ='Male',
+    NotExpressed ='NotExpressed'
 }
 
 export interface IntfJWTPayload {
@@ -23,35 +33,42 @@ export interface IntfJWTPayload {
     usrLogin: string,
     usrName: string,
     usrFamily: string,
-    usrApproval: enuUserApprovalState,
+    usrGender: enuUserGender
+    //usrApproval: enuUserApprovalState,
     usrStatus: enuUserStatus,
-    canChangePass: boolean,
+    //canChangePass: boolean,
     rolID: number,
     rolName: string
 }
 
-/*
+
 function createJWTAndSaveToActiveSession(
+    db:clsORM,
     login: string,
-    activeAccount: unknown
+    activeAccount: object
 ) {
     const payload: IntfJWTPayload = {
-        iat: activeAccount.Privs.issuance,
-        uid: activeAccount.Privs.usrID,
-        privs: activeAccount.Privs.privs,
+        iat: activeAccount['Issuance'],
+        uid: activeAccount['usrID'],
+        privs: activeAccount['privs'],
         usrLogin: login,
-        usrName: activeAccount.Privs.usrName,
-        usrFamily: activeAccount.Privs.usrFamily,
-        usrApproval: activeAccount.Privs.usrApproval,
-        usrStatus: activeAccount.Privs.usrStatus,
-        canChangePass: activeAccount.Privs.hasPass,
-        rolID: activeAccount.Privs.usr_rolID,
-        rolName: activeAccount.Privs.rolName,
+        usrName: activeAccount['usrName'],
+        usrFamily: activeAccount['usrFamily'],
+        usrGender: activeAccount['usrGender'],
+        //usrApproval: activeAccount['usrApproval'],
+        usrStatus: activeAccount['usrStatus'],
+        //canChangePass: activeAccount['hasPass'],
+        rolID: activeAccount['usr_rolID'],
+        rolName: activeAccount['rolName'],
     }
 
-    const jwt = EJWT.createSigned(payload, enuTokenActorType.User, {}, activeAccount.ttl, activeAccount.Privs['ssnKey'])
+    const jwt = EJWT.createSigned(payload, enuTokenActorType.User, {}, activeAccount['ttl'], activeAccount['ssnKey'])
+
+    db.call("spSession_UpdateJWT", [activeAccount['ssnKey'], jwt, activeAccount['Issuance']])
+
+    return jwt
 }
 
 export default { 
     createJWTAndSaveToActiveSession
-}*/
+}
