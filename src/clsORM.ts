@@ -3,6 +3,7 @@ import { exInvalidQuery } from "#BaseNode/exceptions"
 import { IntfKeyVal, IntfQueryParams } from "#BaseNode/interfaces"
 import { removeUndefined } from "./functions"
 import Joi from "joi"
+import { gLogger } from "./logger"
 
 export enum enuJoinType {
     Left = "LEFT",
@@ -250,7 +251,7 @@ export abstract class clsORM {
                 if (!col)
                     throw new exInvalidQuery(`Invalid condition column: {${cond}}`)
 
-                if (condParts[1]! in [">", "<", "=", "LIKE", "!="])
+                if (condParts[1]! in [">", "<", "=", "NOTLIKE", "LIKE", "!="])
                     throw new exInvalidQuery(`Invalid condition comparator: {${cond}}`)
 
                 if (condParts.length === 2) {
@@ -264,8 +265,13 @@ export abstract class clsORM {
                         else throw new exInvalidQuery(`Invalid condition (condParts[1] ) with null value`)
                         requiredValsCount--
                     } else {
+                        if (condParts[1] === "NOTLIKE")
+                            condParts[1] = "NOT LIKE"
                         condKeys.push(`${condParts[0]} ${condParts[1]} ? `)
-                        clauseValues.push(value)
+                        if (value.includes("%") === false && (condParts[1] === "LIKE" || condParts[1] === "NOT LIKE"))
+                            clauseValues.push(`%${value}%`)
+                        else
+                            clauseValues.push(value)
                     }
                 } else
                     condKeys.push(cond)
@@ -343,8 +349,10 @@ SELECT ${columns.selectors.join(",\n")}
   LIMIT ${params.offset ? params.offset + ", " : ""} ${limit || params.limit || 10}
 `
         const condValues = [...params.condVals || [], ...conditions.clauseValues]
-        if (condValues.length != conditions.requiredValsCount)
+        if (condValues.length != conditions.requiredValsCount) {
+            gLogger.debug({ condValues, conditions })
             throw new exInvalidQuery(`Count of where clause parameters and values must be equal (${condValues.length} vs ${conditions.requiredValsCount})`)
+        }
 
         conditions.usedCols.forEach((col, index) => condValues[index] = col.specs.toDB(condValues[index]))
         return { query, condValues }
@@ -454,14 +462,14 @@ SELECT ${columns.selectors.join(",\n")}
                     values.push(JSON.stringify(value))
                 } else if (this.isComplexChange(col.specs, params[key])) {
                     const val = params[key]
-                    if(typeof val === "object") {
-                    if (Object.hasOwn((val as object), 'fmin')) changes.push(`${key}=LEAST(COALESCE(${key},0), ?)`)
-                    if (Object.hasOwn((val as object), 'fmax')) changes.push(`${key}=GREATEST(COALESCE(${key},0), ?)`)
-                    if (Object.hasOwn((val as object), 'min')) changes.push(`${key}=LEAST(${key}, ?)`)
-                    if (Object.hasOwn((val as object), 'max')) changes.push(`${key}=GREATEST(${key}, ?)`)
-                    if (Object.hasOwn((val as object), 'ifnull')) changes.push(`${key}=IFNULL(${key}, ?)`)
-                    if (Object.hasOwn((val as object), 'ifnullKeep')) changes.push(`${key}=IFNULL(?, ${key})`)
-                    values.push(plainVal)
+                    if (typeof val === "object") {
+                        if (Object.hasOwn((val as object), 'fmin')) changes.push(`${key}=LEAST(COALESCE(${key},0), ?)`)
+                        if (Object.hasOwn((val as object), 'fmax')) changes.push(`${key}=GREATEST(COALESCE(${key},0), ?)`)
+                        if (Object.hasOwn((val as object), 'min')) changes.push(`${key}=LEAST(${key}, ?)`)
+                        if (Object.hasOwn((val as object), 'max')) changes.push(`${key}=GREATEST(${key}, ?)`)
+                        if (Object.hasOwn((val as object), 'ifnull')) changes.push(`${key}=IFNULL(${key}, ?)`)
+                        if (Object.hasOwn((val as object), 'ifnullKeep')) changes.push(`${key}=IFNULL(?, ${key})`)
+                        values.push(plainVal)
                     }
                 } else {
                     changes.push(`${key}=?`)

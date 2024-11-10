@@ -108,4 +108,14 @@ export function hasOwnProp(obj: unknown, prop: string) {
     return typeof obj === "object" && obj && Object.hasOwn(obj, prop)
 }
 
-export function concatPath(base: string, path: string) { return base + (base.endsWith("/") ? "" : "/") + path }
+export function concatPath(base: string, path: string) { return base + (base.endsWith("/") ? "" : "/") + (path.startsWith("/") ? path.substring(1) : path) }
+
+export function addMonths(date: string, months: number) {
+    const result = new Date(date)
+    //expectedMonth = ((date.getMonth() + months) % 12 + 12) % 12;
+    result.setMonth(result.getMonth() + months);
+    // if (result.getMonth() !== expectedMonth) {
+    //   result.setDate(0);
+    // }
+    return result;
+}

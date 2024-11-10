@@ -80,6 +80,10 @@ export default class clsMongo {
         return conn.find({ _id: { "$gt": new ObjectId(id) } }).limit(1)
     }
 
+    async find(query: object, limit: number = 0) {
+
+    }
+
     async insert(doc: object | object[], otherCollection?: string) {
         return this._insert(doc, false, otherCollection)
     }

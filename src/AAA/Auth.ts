@@ -1,6 +1,9 @@
 import { clsORM } from "../clsORM"
 import EJWT from "../EJWT"
 import { enuTokenActorType } from "../EJWT/interfaces"
+import RJson from "relaxed-json"
+import lodash from 'lodash'
+import { IntfKeyVal } from "../interfaces"
 
 /*import EJWT from "../EJWT"
 import { enuTokenActorType } from "../EJWT/interfaces"
@@ -26,10 +29,18 @@ export enum enuUserGender {
     NotExpressed ='NotExpressed'
 }
 
+export enum enuAuthSource{
+    Bots = "Bots",
+    User = "User",
+    API = "API",
+    All = "All"
+}
+
+
 export interface IntfJWTPayload {
-    iat: string,
+    iat: number,
     uid: string,
-    privs: object,
+    privs: IntfKeyVal,
     usrLogin: string,
     usrName: string,
     usrFamily: string,
@@ -38,9 +49,19 @@ export interface IntfJWTPayload {
     usrStatus: enuUserStatus,
     //canChangePass: boolean,
     rolID: number,
-    rolName: string
+    rolName: string,
+    typ?: enuTokenActorType,
+    exp?: number
 }
 
+function digestPrivs(privs:object) {
+    const allPrivs = RJson.parse(privs)
+    let parsedPrivs: object = {}
+    if (Array.isArray(allPrivs))
+        for (let i = 0; i < allPrivs.length; ++i)
+            parsedPrivs = lodash.merge(parsedPrivs, allPrivs[i])
+    return parsedPrivs
+}
 
 function createJWTAndSaveToActiveSession(
     db:clsORM,
@@ -68,7 +89,16 @@ function createJWTAndSaveToActiveSession(
 
     return jwt
 }
+/*
+function renewExpiredJWT(jwt: object, remoteIP?: string) : {isRenewed: boolean, newToken: string}{
+//TODO move here 
+    tblSessions.
+    
+}
+*/
 
 export default { 
-    createJWTAndSaveToActiveSession
+    createJWTAndSaveToActiveSession,
+    digestPrivs,
+    // renewExpiredJWT,
 }

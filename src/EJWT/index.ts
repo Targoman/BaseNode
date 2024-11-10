@@ -1,10 +1,11 @@
-import { SHA256, SHA384, SHA512, AES , enc } from 'crypto-js'; 
+import { SHA256, SHA384, SHA512, AES, enc } from 'crypto-js';
 import { DAY } from "../constants";
 import { enuJWTHashAlgs, enuTokenActorType, exJWTExpired, IntfEJWTConfigs } from "./interfaces";
 import { Base64 } from 'js-base64';
 import { gLogger } from "../logger";
 import { exAccessForbidden, exExpectationFailed, exNotAuthenticated } from "../REST/exceptions";
 import { exMsg } from "../functions";
+import { enuAuthSource } from '../AAA/Auth';
 
 
 let EJWTConf: IntfEJWTConfigs = {
@@ -32,7 +33,7 @@ function encryptAndSigned(payload: object): string {
         payload["prv"] = AES.encrypt(JSON.stringify(payload["prv"]), EJWTConf.simpleCryptKey as string).toString()
 
     const head = { typ: "JWT", alg: EJWTConf.hashAlgorithm, }
-    const data = Base64.encode(JSON.stringify(head),true) + '.' + Base64.encode(JSON.stringify(payload), true)
+    const data = Base64.encode(JSON.stringify(head), true) + '.' + Base64.encode(JSON.stringify(payload), true)
     const sign = hashAsSign(data)
     return data + '.' + sign
 }
@@ -109,22 +110,22 @@ function extractAndDecryptPayload(jwt: string): object {
     }
 }
 
-function verifyJWT(
+function retrieveJWTInfo(
     jwt: string,
-    remoteIP: string,
-    tokenAllowUSER: boolean,
-    tokenAllowAPI: boolean,
+    remoteIP?: string,
+    authSource: enuAuthSource = enuAuthSource.All,
 ) {
     const jwtPayload = extractAndDecryptPayload(jwt)
     let jwtTokenActorType = enuTokenActorType.User;
+    void remoteIP
 
     if (Object.hasOwn(jwtPayload, "typ"))
         jwtTokenActorType = jwtPayload["typ"] as enuTokenActorType;
 
-    if ((jwtTokenActorType === enuTokenActorType.User) && (tokenAllowUSER == false))
+    if ((jwtTokenActorType === enuTokenActorType.User) && (authSource != enuAuthSource.User && authSource != enuAuthSource.All))
         throw new exAccessForbidden("Token type `USER` not acceptable by this module. expected: API");
 
-    if ((jwtTokenActorType == enuTokenActorType.API) && (tokenAllowAPI == false))
+    if ((jwtTokenActorType == enuTokenActorType.API) && (authSource != enuAuthSource.API && authSource != enuAuthSource.All))
         throw new exAccessForbidden("Token type `API` not acceptable by this module. expected: USER");
 
     //-- check client ip -----
@@ -135,13 +136,12 @@ function verifyJWT(
     //            throw new exHTTPForbidden("Invalid client IP");
     //    }
 
-    const currentDateTime = (new Date).getTime()
+    const currentDateTime = (new Date).getTime() / 1000
 
     //-- check large expiration -----
     if (jwtTokenActorType == enuTokenActorType.User) {
         if (Object.hasOwn(jwtPayload, "ssnexp") === false)
             throw new exAccessForbidden("Invalid ssnexp in JWT");
-
         if (jwtPayload["ssnexp"] <= currentDateTime)
             throw new exNotAuthenticated("Session expired");
     }
@@ -159,14 +159,16 @@ function verifyJWT(
         else if (TokenBanType == enuTokenBanType.Pause)
             throw new exAccessForbidden("Token is paused");
         */
+
+    return jwtPayload
 }
 
 
 export default {
     encryptAndSigned,
     createSigned,
+    retrieveJWTInfo,
     extractAndDecryptPayload,
-    verifyJWT,
     init(configs?: IntfEJWTConfigs) {
         EJWTConf = { ...EJWTConf, ...configs }
     }

@@ -1,4 +1,4 @@
-import mysql, { MysqlError } from "promise-mysql"
+import mysql, { MysqlError, PoolConnection } from "promise-mysql"
 import { IntfDBConfigs } from "./interfaces";
 import Bluebird from 'bluebird';
 import { sleep } from "./functions";
@@ -60,8 +60,12 @@ export default class clsMySQL {
                 await conn.release();
             }
         } catch (ex) {
-            if ((ex as MysqlError)?.code == "ER_DUP_ENTRY") throw ex;
+            if ((ex as MysqlError)?.code === "ER_DUP_ENTRY") throw ex;
             if ((ex as MysqlError)?.errno === 1644) throw ex
+            if ((ex as MysqlError)?.code === "PROTOCOL_SEQUENCE_TIMEOUT") {
+                const conn = await (await this.pool).getConnection();
+                conn.destroy()
+            }
 
             if (--maxTries > 0) {
                 this.logger.db("Retrying query ...");

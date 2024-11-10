@@ -18,8 +18,8 @@ export function request2SQL(req: Request) {
 
 export function remoteIP(req: Request, convert2IPv4 = false) {
     const ip = requestIP.getClientIp(req)
-    if(ip?.includes(":"))
-        return ip.substring(ip.lastIndexOf(":")+1)
+    if (ip?.includes(":"))
+        return ip.substring(ip.lastIndexOf(":") + 1)
 }
 
 
