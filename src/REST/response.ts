@@ -61,10 +61,10 @@ export async function resOnCreateIgnoreDup(req: Request, res: Response, callback
 export async function resOnUpdate(req: Request, res: Response, callback: () => Promise<IntfUpdateResponse>) {
     void req
     try {
-        const res = await callback()
-        if (res.updatedRows === 0)
+        const result = await callback()
+        if (result.updatedRows === 0)
             throw new exNoChangesApplied()
-        return returnResponse(res, StatusCodes.OK, { affected: res.updatedRows })
+        return returnResponse(res, StatusCodes.OK, { affected: result.updatedRows })
     } catch (ex) {
         if ((ex as MysqlError).sqlState && (ex as MysqlError)?.errno === 1062)
             throw new exDuplicatedItem("Update conflicts with other records")
