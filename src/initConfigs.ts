@@ -4,7 +4,7 @@ import { clsLogger } from "./logger"
 
 let activeconfigFile: string | null = null
 export default function initConfigs(args, baseConfigs) {
-    let conf : IntfKeyVal= {}
+    let conf: IntfKeyVal = {}
     if (args.configFile) {
         try {
             activeconfigFile = (args.configFile.startsWith("/") ? "" : (process.cwd() + "/")) + args.configFile

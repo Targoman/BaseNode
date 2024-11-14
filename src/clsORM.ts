@@ -109,24 +109,29 @@ export abstract class clsORM {
     }
 
     setInstance(instance: clsORM) {
-        this.instance = instance
-        this.cols = this.getCols(instance)
-        if (this.conf.joins) {
-            for (let i = 0; i < this.conf.joins.length; i++) {
-                const join = this.conf.joins[i]
-                if (join.ignore) continue
-                const joinedCols = this.getCols(join.targetTable)
-                for (let i = 0; i < joinedCols.length; i++) {
-                    const jCol = joinedCols[i]
-                    this.cols.push({
-                        selector: (join.alias || join.targetTable.table) + "." + jCol.alias,
-                        alias: (join.alias ? join.alias + "_" : "") + jCol.alias,
-                        join,
-                        specs: join.targetTable[jCol.alias]
-                    })
+        const addJoinCols = (joins?: IntfJoin[]) => {
+            if (joins) {
+                for (let i = 0; i < joins.length; i++) {
+                    const join = joins[i]
+                    if (join.ignore) continue
+                    const joinedCols = this.getCols(join.targetTable)
+                    for (let i = 0; i < joinedCols.length; i++) {
+                        const jCol = joinedCols[i]
+                        this.cols.push({
+                            selector: (join.alias || join.targetTable.table) + "." + jCol.alias,
+                            alias: (join.alias ? join.alias + "_" : "") + jCol.alias,
+                            join,
+                            specs: join.targetTable[jCol.alias]
+                        })
+                    }
+                    addJoinCols(join.targetTable.conf.joins)
                 }
             }
         }
+
+        this.instance = instance
+        this.cols = this.getCols(instance)
+        addJoinCols(this.conf.joins)
     }
 
     private isComplexChange(colSpec: clsColumn, val: unknown) {
@@ -201,7 +206,7 @@ export abstract class clsORM {
             for (const colIndex in cols) {
                 const col = this.cols.find(el => el.alias === cols[colIndex])
                 if (col) addCol(col)
-                else throw new exInvalidQuery(`Col {${col}} not found`)
+                else throw new exInvalidQuery(`Col {${cols[colIndex]}} not found`)
             }
 
         return { selectors, usedCols }

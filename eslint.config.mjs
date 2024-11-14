@@ -11,7 +11,7 @@ export default [
   ...tseslint.configs.recommended,
   ...pluginVue.configs["flat/essential"],
   {
-    files: ["**/*.ts"],
+    files: ["**/*.ts", "**/*.vue",],
     rules: {
       '@typescript-eslint/no-unsafe-function-type': 0,
       "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }]

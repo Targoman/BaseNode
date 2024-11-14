@@ -53,12 +53,12 @@ echo "=== cheking if old builder image is found"
 # fi
 
 if [ $rebuild -eq 1 ];then
-    sudo docker build -t ${ImageName}:builder --build-arg TARGET_APP=${TARGET} -f ./submodules/BaseNode/docker/Dockerfile.builder . 
+    sudo docker build -t ${ImageName}:builder --build-arg TARGET_APP=${TARGET} -f $BuilderDockerFile . 
     if [ $? -ne 0 ];then exit 1; fi 
     echo $fingerprint > $fingerprintPath
 fi
 
-sudo docker build -f ./submodules/BaseNode/docker/Dockerfile.app --build-arg TARGET_APP=${TARGET} --build-arg BUILDER_IMAGE=${ImageName}:builder -t ${ImageName}:$NewVersion . && \
+sudo docker build -f $AppDockerFile --build-arg TARGET_APP=${TARGET} --build-arg BUILDER_IMAGE=${ImageName}:builder -t ${ImageName}:$NewVersion . && \
 sudo docker rmi "$ImageName:latest" || true && \
 sudo docker tag "$ImageName:$NewVersion" "$ImageName:latest" && \
 sudo docker push "$ImageName:$NewVersion"  && \
