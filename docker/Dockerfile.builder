@@ -1,4 +1,4 @@
-FROM node:current-alpine
+FROM node:23-alpine3.19
 ARG TARGET_APP
 
 RUN test -n "$TARGET_APP"

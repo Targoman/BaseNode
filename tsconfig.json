@@ -50,6 +50,7 @@
   },
   "include": [
     "src/**/*.ts",
-    "test/*.ts",
+    "test/*.ts", "../submodules/BaseNode/src/AAA/tables/user.ts",
+    "../submodules/BaseNode/src/AAA/tables/user.ts", "../../API/src/endpoints/AAA/user.ts",
   ]
 }

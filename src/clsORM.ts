@@ -135,7 +135,7 @@ export abstract class clsORM {
     }
 
     private isComplexChange(colSpec: clsColumn, val: unknown) {
-        return colSpec.isObject === false && (typeof val === "object") && (
+        return colSpec.isObject === false && typeof val === "object" && val !== null && (
             Object.hasOwn((val as object), 'min')
             || Object.hasOwn((val as object), 'max')
             || Object.hasOwn((val as object), 'fmin')
