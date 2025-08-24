@@ -41,12 +41,15 @@ export function getDBconfigs(baseConfigs?: IntfDBConfigs | { [key: string]: Intf
     return conf
 }
 
-export function parseEnum(keys, str: string) {
+export function parseEnum<T extends Record<string, string | number>>(keys: T, str: string): T[keyof T] | "" {
     const enumKeys = Object.keys(keys);
-    for (let i = 0; i < enumKeys.length; i++)
-        if (enumKeys[i] === str || keys[enumKeys[i]] === str)
-            return keys[enumKeys[i]]
-    return ""
+    for (let i = 0; i < enumKeys.length; i++) {
+        const key = enumKeys[i] as keyof T;
+        if (key === str || keys[key] === str) {
+            return keys[key];
+        }
+    }
+    return "";
 }
 
 export function prompt(message: string) {
@@ -55,9 +58,11 @@ export function prompt(message: string) {
     return new Promise<string>((resolve) => rl.question(message, resolve));
 }
 
-export function enumStr(enu, val) {
-    for (var k in enu) if (enu[k] == val) return k;
-    return undefined
+export function enumStr<T extends Record<string, string | number>>(enu: T, val: string | number): keyof T | undefined {
+    for (const k in enu) {
+        if (enu[k] === val) return k;
+    }
+    return undefined;
 }
 
 export function removeExtraSpaces(text?: string, maxlen?: number) {
@@ -67,22 +72,35 @@ export function removeExtraSpaces(text?: string, maxlen?: number) {
     return maxlen ? text.substring(0, maxlen) : text
 }
 
-export function simplifyByJSON(val, forceArray = false) {
-    const converted = val && JSON.parse(JSON.stringify(val))
-    return converted && (forceArray ? Array.isArray(converted) ? converted : [converted] : converted)
+export function simplifyByJSON<T>(val: T, forceArray = false): T | T[] | null {
+    if (!val) return null;
+    try {
+        const converted = JSON.parse(JSON.stringify(val));
+        if (forceArray) {
+            return Array.isArray(converted) ? converted : [converted];
+        }
+        return converted;
+    } catch {
+        return null;
+    }
 }
 
-export function parseBool(val?) {
-    if (!val) return false
-    if (typeof val === "boolean") return val
-    if (typeof val === "number") return val !== 0
-    if (typeof val === "string") return val.toLocaleLowerCase() === "true"
-    return false
+export function parseBool(val?: unknown): boolean {
+    if (!val) return false;
+    if (typeof val === "boolean") return val;
+    if (typeof val === "number") return val !== 0;
+    if (typeof val === "string") return val.toLowerCase() === "true";
+    return false;
 }
 
-export function removeUndefined(obj: object) {
-    Object.keys(obj).forEach(key => obj[key] === undefined ? delete obj[key] : {});
-    return obj
+export function removeUndefined<T extends Record<string, unknown>>(obj: T): T {
+    const result = { ...obj };
+    Object.keys(result).forEach(key => {
+        if (result[key] === undefined) {
+            delete result[key];
+        }
+    });
+    return result;
 }
 
 export function isNumber(value) {
@@ -94,10 +112,10 @@ export function unify(array1: string[], array2: string[]) {
 }
 
 export function ms2HRF(ms: number) {
-    if (ms > 60 * MINUTE) return `${ms / 60 * MINUTE} Hours`
-    if (ms > MINUTE) return `${ms / MINUTE} Minutes`
-    if (ms > SECOND) return `${ms / SECOND} Seconds`
-    return `${ms} miliseconds`
+    if (ms > 60 * MINUTE) return `${Math.floor(ms / (60 * MINUTE))} Hours`
+    if (ms > MINUTE) return `${Math.floor(ms / MINUTE)} Minutes`
+    if (ms > SECOND) return `${Math.floor(ms / SECOND)} Seconds`
+    return `${ms} milliseconds`
 }
 
 export function exMsg(ex: unknown): string {
@@ -110,12 +128,8 @@ export function hasOwnProp(obj: unknown, prop: string) {
 
 export function concatPath(base: string, path: string) { return base + (base.endsWith("/") ? "" : "/") + (path.startsWith("/") ? path.substring(1) : path) }
 
-export function addMonths(date: string, months: number) {
-    const result = new Date(date)
-    //expectedMonth = ((date.getMonth() + months) % 12 + 12) % 12;
+export function addMonths(date: string, months: number): Date {
+    const result = new Date(date);
     result.setMonth(result.getMonth() + months);
-    // if (result.getMonth() !== expectedMonth) {
-    //   result.setDate(0);
-    // }
     return result;
 }

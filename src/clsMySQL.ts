@@ -1,6 +1,5 @@
-import mysql, { MysqlError, PoolConnection } from "promise-mysql"
+import mysql, { MysqlError } from "promise-mysql"
 import { IntfDBConfigs } from "./interfaces";
-import Bluebird from 'bluebird';
 import { sleep } from "./functions";
 import { exDB, exItemNotfound } from "./exceptions";
 import { clsLogger } from "./logger";
@@ -28,7 +27,7 @@ export interface IntfDeleteResponse {
 }
 
 export default class clsMySQL {
-    private pool: Bluebird<mysql.Pool>;
+    private pool: ReturnType<typeof mysql.createPool>;
     private logger: clsLogger
     private _schema: string
 
@@ -51,7 +50,8 @@ export default class clsMySQL {
 
     private async runQuery(queryStr: string, vars?: Array<unknown> | { [key: string]: unknown }, maxTries = 3) {
         try {
-            const conn = await (await this.pool).getConnection();
+            const pool = await this.pool;
+            const conn = await pool.getConnection();
             try {
                 const Result = await conn.query(queryStr, vars);
                 this.logger.db({ queryStr, vars, Result });
@@ -63,7 +63,8 @@ export default class clsMySQL {
             if ((ex as MysqlError)?.code === "ER_DUP_ENTRY") throw ex;
             if ((ex as MysqlError)?.errno === 1644) throw ex
             if ((ex as MysqlError)?.code === "PROTOCOL_SEQUENCE_TIMEOUT") {
-                const conn = await (await this.pool).getConnection();
+                const pool = await this.pool;
+                const conn = await pool.getConnection();
                 conn.destroy()
             }
 

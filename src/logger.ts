@@ -4,7 +4,7 @@ import util from "util"
 import fs from 'fs'
 
 function logTime() {
-    return new Date(Date.now() + 0 * 14.58).toISOString()
+    return new Date().toISOString()
 }
 
 function caller() {
@@ -82,11 +82,17 @@ export class clsLogger {
     file(module: string, ...theArgs) {
         try {
             fs.appendFileSync(`${clsLogger.config.logPath}/${module}.err.log`,
-                `${new Date(Date.now() + 864000 * 14.58).toISOString()}: ${JSON.stringify(theArgs)}\n`)
+                `${new Date().toISOString()}: ${JSON.stringify(theArgs)}\n`)
         } catch (ex) {
-            void ex
-            fs.appendFileSync(`${clsLogger.config.logPath}/${module}.err.log`,
-                `${new Date(Date.now() + 864000 * 14.58).toISOString()}: theArgs\n`)
+            // Log error to console if file logging fails
+            console.error(`Failed to write to log file for module ${module}:`, ex);
+            try {
+                fs.appendFileSync(`${clsLogger.config.logPath}/${module}.err.log`,
+                    `${new Date().toISOString()}: [LOGGING_ERROR] ${ex instanceof Error ? ex.message : 'Unknown error'}\n`)
+            } catch {
+                // If even the fallback fails, just log to console
+                console.error(`Critical: Cannot write to log file for module ${module}`);
+            }
         }
     }
     private debugAllowed(level: number) {

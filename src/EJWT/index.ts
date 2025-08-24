@@ -9,9 +9,9 @@ import { enuAuthSource } from '../AAA/Auth';
 
 
 let EJWTConf: IntfEJWTConfigs = {
-    secret: "~5KHeTc7.C^Ln^<X~4<Kr",
+    secret: process.env.JWT_SECRET || "~5KHeTc7.C^Ln^<X~4<Kr", // TODO: Remove default in production
     hashAlgorithm: enuJWTHashAlgs.HS256,
-    simpleCryptKey: "zfsde 321r w4 23 43",
+    simpleCryptKey: process.env.JWT_ENCRYPT_KEY || "zfsde 321r w4 23 43", // TODO: Remove default in production
     ttl: 300,
     normalLoginTTL: 1 * DAY,
     rememberLoginTTL: 7 * DAY

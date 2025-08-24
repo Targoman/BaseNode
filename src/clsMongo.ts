@@ -80,8 +80,10 @@ export default class clsMongo {
         return conn.find({ _id: { "$gt": new ObjectId(id) } }).limit(1)
     }
 
-    async find(query: object, limit: number = 0) {
-
+    async find(query: object, _limit: number = 0) {
+        // TODO: Implement find functionality
+        const conn = await this.connect()
+        return conn.find(query)
     }
 
     async insert(doc: object | object[], otherCollection?: string) {

@@ -36,6 +36,11 @@ export enum enuAuthSource{
     All = "All"
 }
 
+export enum enuBannedStatus {
+    Active = "Active",
+    Removed = "Removed",
+    Banned = "Banned"
+}
 
 export interface IntfJWTPayload {
     iat: number,

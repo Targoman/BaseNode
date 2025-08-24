@@ -1,7 +1,6 @@
 import commonjs from '@rollup/plugin-commonjs';
 import json from '@rollup/plugin-json';
 import nodeResolve from '@rollup/plugin-node-resolve';
-import builtins from 'rollup-plugin-node-builtins';
 import progress from 'rollup-plugin-progress';
 import typescript from 'rollup-plugin-typescript2';
 
@@ -16,7 +15,6 @@ export default {
   ],
   plugins: [
     progress(),
-    builtins(),
     commonjs({
       exclude: "chalk"
     }),

@@ -134,36 +134,41 @@ export abstract class clsORM {
         addJoinCols(this.conf.joins)
     }
 
-    private isComplexChange(colSpec: clsColumn, val: unknown) {
-        return colSpec.isObject === false && typeof val === "object" && val !== null && (
-            Object.hasOwn((val as object), 'min')
-            || Object.hasOwn((val as object), 'max')
-            || Object.hasOwn((val as object), 'fmin')
-            || Object.hasOwn((val as object), 'fmax')
-            || Object.hasOwn((val as object), 'ifnull')
-            || Object.hasOwn((val as object), 'ifnullKeep')
-        )
+    private isComplexChange(colSpec: clsColumn, val: unknown): boolean {
+        if (colSpec.isObject === false && typeof val === "object" && val !== null) {
+            const obj = val as Record<string, unknown>;
+            return ['min', 'max', 'fmin', 'fmax', 'ifnull', 'ifnullKeep'].some(key => 
+                Object.hasOwn(obj, key)
+            );
+        }
+        return false;
     }
 
-    private valToStringIfNeeded(colSpec: clsColumn, val) {
+    private valToStringIfNeeded(colSpec: clsColumn, val: unknown): unknown {
         if (colSpec.isString) {
-            if (val !== null && val !== undefined && typeof val === 'number')
-                return `${val}`
+            if (val !== null && val !== undefined && typeof val === 'number') {
+                return `${val}`;
+            }
         }
-        return val
+        return val;
     }
 
-    private toPlainValue(colSpec: clsColumn, val) {
-        if (!this.isComplexChange(colSpec, val))
-            return this.valToStringIfNeeded(colSpec, val)
-        else {
-            if (Object.hasOwn(val, 'fmin')) return this.valToStringIfNeeded(colSpec, val.fmin)
-            if (Object.hasOwn(val, 'fmax')) return this.valToStringIfNeeded(colSpec, val.fmax)
-            if (Object.hasOwn(val, 'min')) return this.valToStringIfNeeded(colSpec, val.min)
-            if (Object.hasOwn(val, 'max')) return this.valToStringIfNeeded(colSpec, val.max)
-            if (Object.hasOwn(val, 'ifnull')) return this.valToStringIfNeeded(colSpec, val.ifnull)
-            if (Object.hasOwn(val, 'ifnullKeep')) return this.valToStringIfNeeded(colSpec, val.ifnullKeep)
+    private toPlainValue(colSpec: clsColumn, val: unknown): unknown {
+        if (!this.isComplexChange(colSpec, val)) {
+            return this.valToStringIfNeeded(colSpec, val);
         }
+        
+        if (typeof val === 'object' && val !== null) {
+            const obj = val as Record<string, unknown>;
+            if (Object.hasOwn(obj, 'fmin')) return this.valToStringIfNeeded(colSpec, obj.fmin);
+            if (Object.hasOwn(obj, 'fmax')) return this.valToStringIfNeeded(colSpec, obj.fmax);
+            if (Object.hasOwn(obj, 'min')) return this.valToStringIfNeeded(colSpec, obj.min);
+            if (Object.hasOwn(obj, 'max')) return this.valToStringIfNeeded(colSpec, obj.max);
+            if (Object.hasOwn(obj, 'ifnull')) return this.valToStringIfNeeded(colSpec, obj.ifnull);
+            if (Object.hasOwn(obj, 'ifnullKeep')) return this.valToStringIfNeeded(colSpec, obj.ifnullKeep);
+        }
+        
+        return val;
     }
 
     createChanges(colMap: IntfKeyVal): IntfKeyVal {
@@ -176,19 +181,20 @@ export abstract class clsORM {
 
         const changes = removeUndefined(Joi.attempt(plainColMap, Joi.object(schema).or(...Object.keys(plainColMap))))
         Object.keys(changes).forEach(colName => {
-            changes[colName] = this[colName].toDB(changes[colName])
+            changes[colName] = this[colName].toDB(changes[colName]);
             if (this.isComplexChange(this[colName], colMap[colName])) {
-                const val = colMap[colName]
-                if (typeof val === 'object') {
-                    if (Object.hasOwn((val as object), 'fmin')) changes[colName] = { fmin: changes[colName] }
-                    if (Object.hasOwn((val as object), 'fmax')) changes[colName] = { fmax: changes[colName] }
-                    if (Object.hasOwn((val as object), 'min')) changes[colName] = { min: changes[colName] }
-                    if (Object.hasOwn((val as object), 'max')) changes[colName] = { max: changes[colName] }
-                    if (Object.hasOwn((val as object), 'ifnull')) changes[colName] = { ifnull: changes[colName] }
-                    if (Object.hasOwn((val as object), 'ifnullKeep')) changes[colName] = { ifnullKeep: changes[colName] }
+                const val = colMap[colName];
+                if (typeof val === 'object' && val !== null) {
+                    const obj = val as Record<string, unknown>;
+                    if (Object.hasOwn(obj, 'fmin')) changes[colName] = { fmin: changes[colName] };
+                    if (Object.hasOwn(obj, 'fmax')) changes[colName] = { fmax: changes[colName] };
+                    if (Object.hasOwn(obj, 'min')) changes[colName] = { min: changes[colName] };
+                    if (Object.hasOwn(obj, 'max')) changes[colName] = { max: changes[colName] };
+                    if (Object.hasOwn(obj, 'ifnull')) changes[colName] = { ifnull: changes[colName] };
+                    if (Object.hasOwn(obj, 'ifnullKeep')) changes[colName] = { ifnullKeep: changes[colName] };
                 }
             }
-        })
+        });
         return changes as IntfKeyVal
     }
 

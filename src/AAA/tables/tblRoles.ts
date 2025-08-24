@@ -1,7 +1,7 @@
 import Joi from "joi"
 import { clsColumn, clsORM } from "../../clsORM"
 import clsMySQL from "../../clsMySQL"
-import { enuBannedStatus } from "#Common/enums"
+import { enuBannedStatus } from "../Auth"
 
 export class tblRoles extends clsORM {
     rolID = new clsColumn(() => Joi.number().min(1), { isReadonly: true, isPrimary: true })

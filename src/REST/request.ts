@@ -16,10 +16,12 @@ export function request2SQL(req: Request) {
     return params
 }
 
-export function remoteIP(req: Request, convert2IPv4 = false) {
+export function remoteIP(req: Request, _convert2IPv4 = false) {
+    //TODO implement convert2IPv4 for ipv6
     const ip = requestIP.getClientIp(req)
     if (ip?.includes(":"))
         return ip.substring(ip.lastIndexOf(":") + 1)
+    return ip
 }
 
 
